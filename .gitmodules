@@ -1,0 +1,3 @@
+[submodule "flask-splitwise-example"]
+	path = flask-splitwise-example
+	url = https://github.com/namaggarwal/flask-splitwise-example
