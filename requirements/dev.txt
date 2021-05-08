@@ -1,2 +1,5 @@
 ipython
 pip-tools
+black
+mypy
+pylint
