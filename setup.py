@@ -2,9 +2,9 @@ from setuptools import find_packages
 from setuptools import setup
 
 setup(
-    name='flask_app',
-    description="Flask app for test CI",
-    author='ozada',
+    name='earnestly-equitable',
+    description="asdfghjk",
+    author='earnest',
     url='',
     packages=find_packages('src'),
     package_dir={
