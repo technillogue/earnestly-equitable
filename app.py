@@ -12,7 +12,7 @@ from splitwise import Splitwise
 from .decorators import redirect_for_session
 
 app = Flask(__name__)
-secrets = json.load(open("secrets.yaml"))
+secrets = json.load(open("secrets.json"))
 consumer_key = secrets["consumer_key"]
 consumer_secret = secrets["consumer_secret"]
 api_key = secrets["api_key"]
