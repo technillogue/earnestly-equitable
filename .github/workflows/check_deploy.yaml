@@ -1,5 +1,5 @@
 name: 'Check, Publish to Docker Hub, Deploy'
-'on': push
+on: push
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -25,13 +25,17 @@ jobs:
       #     name: codecov-umbrella
       - name: Black
         run: black . --check -l 81
-#      - name: mypy
+#      - name: mypy # repo needs to either not have __init__.py or not have a dash
 #        run: mypy *py
       - name: Pylint
         run: pylint *py
-  publish:
-    needs:
-      - checks
+
+name: publish
+on:
+  workflow_dispatch:
+#  publish:
+#    needs:
+#      - checks
     runs-on:
       - ubuntu-latest
     env:
