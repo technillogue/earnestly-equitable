@@ -15,32 +15,38 @@ from flask import (
     url_for,
 )
 from werkzeug.wrappers import Response
-from splitwise import Splitwise
+
+# import _splitwise # namespace import i think?
+import _splitwise
+from _splitwise import Splitwise
+from _splitwise.expense import Expense, ExpenseUser
 
 secrets = json.load(open("secrets.json"))
 consumer_key = secrets["consumer_key"]
 consumer_secret = secrets["consumer_secret"]
-api_key = secrets["api_key"]  # idk what this does
+api_key = secrets.get("api_key")
 
 
 app = Flask(__name__)
 app.secret_key = secrets["flask_secret_key_for_cookies"]
 
-# @app.route("/")
-# @redirect_for_session(session_has={"access_token": "friends"})
+
 def index() -> str:
-    header = "<h1>Earnest the Jortfort Splitwise</h1>"
-    _friends = f"<a href='{url_for('friends')}'>friends</a>"
-    _login = f"<a href='{url_for('login')}'>friends</a>"
-    link = _friends if "access_token" in session else _login
-    return render_template_string("\n".join([header, link]))
+    header = "<h1>Earnest the Jortfort Splitwise</h1>" + (
+        "api key enabled" if api_key else ""
+    )
+    links = [
+        f"<li><a href='{url_for(method)}'>{method}</a>"
+        for method in ["login", "logout", "friends"]
+    ]
+    return render_template_string("\n".join([header, *links]))
 
 
 redirect_uri = "http://localhost:5000/authorize"
 
-# @app.route("/login")
+
 def login() -> Response:
-    wise = Splitwise(consumer_key, consumer_secret)
+    wise = Splitwise(consumer_key, consumer_secret, api_key=api_key)
     # redirect_uri = url_for("authorize", _external=True)
     print(redirect_uri)
     url, state = wise.getOAuth2AuthorizeURL(redirect_uri)
@@ -50,14 +56,21 @@ def login() -> Response:
     return redirect(url)
 
 
+def logout() -> Response:
+    if "oauth_session" in state:
+        del session["oauth_state"]
+    if "access_token" in state:
+        del session["access_token"]
+
+
 # @app.route("/authorize")
-# @redirect_for_session(session_needs={KEY_SECRET: "root"}) # "oauth_state": "root"? # no
 def authorize() -> Response:
-    wise = Splitwise(consumer_key, consumer_secret)
+    wise = Splitwise(consumer_key, consumer_secret, api_key=api_key)
     # redirect_uri = url_for("authorize", _external=True)
     code = request.args.get("code")
     if request.args.get("state") != session["oauth_state"]:
         print("oauth state bad")
+    # prettyprint an authorization failure for debugging
     access_token = wise.getOAuth2AccessToken(code, redirect_uri)
     session["access_token"] = access_token
     return redirect(url_for("friends"))
@@ -66,10 +79,9 @@ def authorize() -> Response:
 # @app.route("/friends")
 # @redirect_for_session(session_needs={"access_token": "home"})
 def friends() -> Union[Response, str]:  # idk about this one
-    if "access_token" not in session:
-        return redirect(url_for("index"))
-    wise = Splitwise(consumer_key, consumer_secret)
-    wise.setAccessToken(session["access_token"])
+    wise = Splitwise(consumer_key, consumer_secret, api_key=api_key)
+    if session.get("access_token"):
+        wise.setAccessToken(session["access_token"])
 
     friend_names = [
         " ".join(filter(None, (f.first_name, f.last_name)))
@@ -79,10 +91,61 @@ def friends() -> Union[Response, str]:  # idk about this one
     return render_template_string(template)
 
 
+def expenses() -> str:
+    wise = Splitwise(consumer_key, consumer_secret, api_key=api_key)
+    if session.get("access_token"):
+        wise.setAccessToken(session["access_token"])
+    group = wise.getGroups()[0]
+    expense = Expense()
+    expense.setCost("10")
+    expense.setDescription("Testing")
+
+
 app.add_url_rule("/", view_func=index)
 app.add_url_rule("/login", view_func=login)
+app.add_url_rule("/logout", view_func=logout)
 app.add_url_rule("/authorize", view_func=authorize)
 app.add_url_rule("/friends", view_func=friends)
+
+import functools
+
+
+@functools.cache
+def get_user_name(user_id):
+    return S.getUser(user_id).first_name
+
+
+## example with api_key!
+S = Splitwise(consumer_key, consumer_secret, api_key=api_key)
+earnest = s.getGroups()[1]  # 0 is non-group
+debts = [
+    f"{get_user_name(debt.getFromUser())} owes {debt.getAmount()} to {get_user_name(debt.getToUser())}"
+    for debt in earnest.simplified_debts
+]
+user_ids = {member.first_name: member.id for member in earnest.getMembers()}
+shares = {"Sylvie": 23, "Hameed": 21, "Leigh": 17, "Stef": 17}
+# this is with stef at 3120 effective income
+def mkexpense(cost=10, desc="Testing", group_id=1, shares=shares):
+    expense = Expense()
+    expense.setCost(cost)
+    expense.setDescription(desc)
+    expense.setGroupId(group_id)
+    total_shares = sum(shares.values())
+    print(cost)
+
+    def mkUser(name, share):
+        user = ExpenseUser()
+        user.setId(user_ids[name])
+        user.setFirstName(name)
+        user.setOwedShare(share / total_shares * cost)
+        user.setPaidShare(cost if name == "Sylvie" else 0)
+        return user
+
+    users = [mkUser(name, share) for name, share in shares.items()]
+    expense.setUsers(users)
+    nExpense, errors = S.createExpense(expense)
+    print(nExpense, errors)
+    return (nExpense, errors)
 
 
 if __name__ == "__main__":
