@@ -125,7 +125,7 @@ debts = [
 user_ids = {member.first_name: member.id for member in earnest.getMembers()}
 shares = {"Sylvie": 23, "Hameed": 21, "Leigh": 17, "Stef": 17}
 # this is with stef at 3120 effective income
-def mkexpense(cost=10, desc="Testing", group_id=1, shares=shares):
+def mkexpense(cost=10, desc="Testing", group_id=earnest.id, shares=shares):
     expense = Expense()
     expense.setCost(cost)
     expense.setDescription(desc)
