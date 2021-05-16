@@ -1,3 +1,7 @@
 [submodule "flask-splitwise-example"]
 	path = flask-splitwise-example
 	url = https://github.com/namaggarwal/flask-splitwise-example
+[submodule "_splitwise"]
+	path = _splitwise
+	url = git@github.com:technillogue/splitwise.git
+	branch = master
