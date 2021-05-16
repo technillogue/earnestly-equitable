@@ -2,6 +2,8 @@ https://dev.splitwise.com/#section/Introduction
 
 https://github.com/namaggarwal/splitwise
 
+git submodule init/update, set up secrets, poetry init, poetry run python3.9 -i app.py, mkexpense()
+
 roadmap:
 
 - technillogue.xyz (or register earnest.xyz?) http endpoints for registering a split and making an expense with a split
