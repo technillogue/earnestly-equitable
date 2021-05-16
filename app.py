@@ -2,11 +2,9 @@ import json
 import sys
 import subprocess
 import shlex
-from types import SimpleNamespace
-
-# from termcolor import colored
-from urllib import parse
 from typing import cast, Union
+from types import SimpleNamespace
+from urllib import parse
 from flask import (
     Flask,
     Request,
@@ -18,11 +16,6 @@ from flask import (
 )
 from werkzeug.wrappers import Response
 from splitwise import Splitwise
-
-# from .decorators import redirect_for_session
-def colored(s, c):
-    return s
-
 
 secrets = json.load(open("secrets.json"))
 consumer_key = secrets["consumer_key"]
@@ -43,11 +36,13 @@ def index() -> str:
     return render_template_string("\n".join([header, link]))
 
 
+redirect_uri = "http://localhost:5000/authorize"
+
 # @app.route("/login")
 def login() -> Response:
     wise = Splitwise(consumer_key, consumer_secret)
-    redirect_uri = url_for("authorize", _external=True)
-    print(colored(redirect_uri, "red"))
+    # redirect_uri = url_for("authorize", _external=True)
+    print(redirect_uri)
     url, state = wise.getOAuth2AuthorizeURL(redirect_uri)
     # conflicting info about whether state needs to be passed to getOAuth2AccessToken
     # is supposed to protect cross-site request forgery
@@ -59,7 +54,7 @@ def login() -> Response:
 # @redirect_for_session(session_needs={KEY_SECRET: "root"}) # "oauth_state": "root"? # no
 def authorize() -> Response:
     wise = Splitwise(consumer_key, consumer_secret)
-    redirect_uri = url_for("authorize", _external=True)
+    # redirect_uri = url_for("authorize", _external=True)
     code = request.args.get("code")
     if request.args.get("state") != session["oauth_state"]:
         print("oauth state bad")
