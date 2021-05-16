@@ -117,7 +117,7 @@ def get_user_name(user_id):
 
 ## example with api_key!
 S = Splitwise(consumer_key, consumer_secret, api_key=api_key)
-earnest = s.getGroups()[1]  # 0 is non-group
+earnest = S.getGroups()[1]  # 0 is non-group
 debts = [
     f"{get_user_name(debt.getFromUser())} owes {debt.getAmount()} to {get_user_name(debt.getToUser())}"
     for debt in earnest.simplified_debts
@@ -177,5 +177,7 @@ if __name__ == "__main__":
         session = {}
         print(repr(authorize()))
         print(repr(friends()))
+    elif "--mkexpense" in sys.argv:
+        mkexpense()
     else:
         app.run(debug=True, host="localhost", port="5000")
