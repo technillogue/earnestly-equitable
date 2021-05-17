@@ -55,3 +55,14 @@ on:
         run: 'docker tag $LOGIN/$NAME:${GITHUB_REF:10} $LOGIN/$NAME:latest'
       - name: Push image tag latest to docker.io
         run: 'docker push $LOGIN/$NAME:latest'
+name: gcloud
+on:
+    workflow_dispatch:
+        runs-on: ubuntu-latest
+        steps:
+            # needs gcloud sdk inited
+            - name: publish
+              run: 'gcloud builds submit --tag gcr.io/${gcloud config get-value project}/earnest'
+	    - name: deploy
+    	      run: 'gcloud run deploy --image gcr.io/${gcloud config get-value project}/earnest --platform managed'
+    	      # this needs service name, region (us-central1), unauthenticated invocations (y). returns service url
