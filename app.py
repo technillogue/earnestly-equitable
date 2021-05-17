@@ -43,12 +43,12 @@ def index() -> str:
     return render_template_string("\n".join([header, *links]))
 
 
-redirect_uri = "http://localhost:5000/authorize"
+#redirect_uri = "http://localhost:5000/authorize"
 
 
 def login() -> Response:
     wise = Splitwise(consumer_key, consumer_secret, api_key=api_key)
-    # redirect_uri = url_for("authorize", _external=True)
+    redirect_uri = url_for("authorize", _external=True)
     print(redirect_uri)
     url, state = wise.getOAuth2AuthorizeURL(redirect_uri)
     # conflicting info about whether state needs to be passed to getOAuth2AccessToken
@@ -67,7 +67,7 @@ def logout() -> Response:
 # @app.route("/authorize")
 def authorize() -> Response:
     wise = Splitwise(consumer_key, consumer_secret, api_key=api_key)
-    # redirect_uri = url_for("authorize", _external=True)
+    redirect_uri = url_for("authorize", _external=True)
     code = request.args.get("code")
     if request.args.get("state") != session["oauth_state"]:
         print("oauth state bad")
