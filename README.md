@@ -15,3 +15,13 @@ eventually, maybe:
 - slack #receipts integration
 - google sheets split calculation integration
 - push income changes from slack
+
+```
+gcloud init # (login, choose the region, choose the earnest project, etc)
+set project (gcloud config get-value project)
+gcloud builds submit --tag gcr.io/$project/earnest 
+gcloud run deploy --tag gcr.io/earnest-314020/earnest --platform managed
+
+```
+
+running into poetry not finding gunicorn

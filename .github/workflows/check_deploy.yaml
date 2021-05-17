@@ -57,6 +57,7 @@ on:
         run: 'docker push $LOGIN/$NAME:latest'
 name: gcloud
 on:
+    # should use https://github.com/google-github-actions/deploy-cloudrun/blob/main/.github/workflows/example-workflow.yaml
     workflow_dispatch:
         runs-on: ubuntu-latest
         steps:

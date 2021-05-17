@@ -38,7 +38,7 @@ def index() -> str:
     )
     links = [
         f"<li><a href='{url_for(method)}'>{method}</a>"
-        for method in ["login", "logout", "friends"]
+        for method in ["login", "logout", "friends", "debts", "expense_route"]
     ]
     return render_template_string("\n".join([header, *links]))
 
@@ -125,11 +125,16 @@ def expense_route():
 
 ## example with api_key!
 S = Splitwise(consumer_key, consumer_secret, api_key=api_key)
+
 earnest = S.getGroups()[1]  # 0 is non-group
-debts = [
-    f"{get_user_name(debt.getFromUser())} owes {debt.getAmount()} to {get_user_name(debt.getToUser())}"
-    for debt in earnest.simplified_debts
-]
+@app.route("/debts")
+def debts() -> str:
+    debts = [
+        f"{get_user_name(debt.getFromUser())} owes {debt.getAmount()} to {get_user_name(debt.getToUser())}"
+        for debt in earnest.simplified_debts
+    ]
+    return "\n".join(f"<li>{line}</li>" for line in debts)
+
 user_ids = {member.first_name: member.id for member in earnest.getMembers()}
 #shares = dict(csv.reader(open("shares.csv")))
 
@@ -196,4 +201,4 @@ if __name__ == "__main__":
     elif "--mkexpense" in sys.argv:
         mkexpense()
     else:
-        app.run(debug=True, host="localhost", port="5000")
+        app.run(debug=True, int(os.environ.get("PORT", 8080)))
