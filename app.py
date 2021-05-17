@@ -115,6 +115,13 @@ def get_user_name(user_id):
     return S.getUser(user_id).first_name
 
 
+@app.route("/expense")
+def expense_route():
+    ex, err = mkexpense(**request.args)
+    if err:
+        return repr(err)
+    return f"success: {ex}"
+
 ## example with api_key!
 S = Splitwise(consumer_key, consumer_secret, api_key=api_key)
 earnest = S.getGroups()[1]  # 0 is non-group
@@ -123,8 +130,16 @@ debts = [
     for debt in earnest.simplified_debts
 ]
 user_ids = {member.first_name: member.id for member in earnest.getMembers()}
-shares = {"Sylvie": 23, "Hameed": 21, "Leigh": 17, "Stef": 17}
-# this is with stef at 3120 effective income
+shares = dict(csv.reader(open("shares.csv")))
+
+shares = {
+    "Sylvie": 23,
+    "Hameed": 21,
+    "Stef": 17,
+}  # this is with stef at 3120 effective income
+real_shares = {**shares, "Leigh": 17}
+
+
 def mkexpense(cost=10, desc="Testing", group_id=earnest.id, shares=shares):
     expense = Expense()
     expense.setCost(cost)
