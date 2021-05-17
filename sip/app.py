@@ -6,7 +6,7 @@ from flask import (
     session,
     url_for,
 )
-from splitwise import Splitwise
+from _splitwise import Splitwise
 
 from .decorators import redirect_for_session
 

@@ -1,4 +1,5 @@
 import json
+import csv
 import sys
 import subprocess
 import shlex
@@ -16,10 +17,10 @@ from flask import (
 )
 from werkzeug.wrappers import Response
 
-# import _splitwise # namespace import i think?
-import _splitwise
-from _splitwise import Splitwise
-from _splitwise.expense import Expense, ExpenseUser
+# import splitwise # namespace import i think?
+import splitwise
+from splitwise import Splitwise
+from splitwise.expense import Expense, ExpenseUser
 
 secrets = json.load(open("secrets.json"))
 consumer_key = secrets["consumer_key"]
@@ -130,7 +131,7 @@ debts = [
     for debt in earnest.simplified_debts
 ]
 user_ids = {member.first_name: member.id for member in earnest.getMembers()}
-shares = dict(csv.reader(open("shares.csv")))
+#shares = dict(csv.reader(open("shares.csv")))
 
 shares = {
     "Sylvie": 23,
