@@ -2,19 +2,32 @@
 # https://hub.docker.com/_/python
 FROM python:3.9-slim
 
-# Allow statements and log messages to immediately appear in the Knative logs
-ENV PYTHONUNBUFFERED True
+# +
+# https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
+
+ENV PYTHONUNBUFFERED True # Allow statements and log messages to immediately appear in the Knative logs
+ENV YOUR_ENV=PYTHONFAULTHANDLER=1 \
+  PYTHONUNBUFFERED=1 \
+  PYTHONHASHSEED=random \
+  PIP_NO_CACHE_DIR=off \
+  PIP_DISABLE_PIP_VERSION_CHECK=on \
+  PIP_DEFAULT_TIMEOUT=100 \
+  POETRY_VERSION=1.0.0
+
+RUN pip install --no-cache-dir poetry
 
 # Copy local code to the container image.
 ENV APP_HOME /app
 WORKDIR $APP_HOME
 COPY . ./
 
-# Install production dependencies.
-RUN pip install --no-cache-dir poetry && \
-    poetry install -v --no-interaction --no-ansi
 
+RUN poetry && \
+    poetry install -v --no-interaction --no-dev --no-ansi
 #    poetry config settings.virtualenvs.create false && \
+
+# Install production dependencies.
+
 
 
 # Run the web service on container startup. Here we use the gunicorn
