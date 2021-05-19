@@ -13,7 +13,7 @@ WORKDIR $APP_HOME
 COPY . ./
 
 # Install production dependencies.
-RUN poetry install -v --no-interaction --no-ansi
+RUN poetry install -v --no-interaction --no-ansi --no-dev
 
 #    poetry config settings.virtualenvs.create false && \
 
