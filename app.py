@@ -1,6 +1,7 @@
 import json
 import csv
 import sys
+import os
 import subprocess
 import shlex
 from typing import cast, Union
@@ -57,19 +58,19 @@ def login() -> Response:
     return redirect(url)
 
 
-def logout() -> Response:
-    if "oauth_session" in state:
+def logout() -> str:
+    if "oauth_session" in session:
         del session["oauth_state"]
-    if "access_token" in state:
+    if "access_token" in session:
         del session["access_token"]
-
+    return "logged out"
 
 # @app.route("/authorize")
 def authorize() -> Response:
     wise = Splitwise(consumer_key, consumer_secret, api_key=api_key)
     redirect_uri = url_for("authorize", _external=True)
     code = request.args.get("code")
-    if request.args.get("state") != session["oauth_state"]:
+    if request.args.get("state") != session.get("oauth_state"):
         print("oauth state bad")
     # prettyprint an authorization failure for debugging
     access_token = wise.getOAuth2AccessToken(code, redirect_uri)
@@ -201,4 +202,4 @@ if __name__ == "__main__":
     elif "--mkexpense" in sys.argv:
         mkexpense()
     else:
-        app.run(debug=True, int(os.environ.get("PORT", 8080)))
+        app.run(port=int(os.environ.get("PORT", 8080)), debug=True)
