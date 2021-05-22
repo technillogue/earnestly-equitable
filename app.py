@@ -44,7 +44,7 @@ def index() -> str:
     return render_template_string("\n".join([header, *links]))
 
 
-#redirect_uri = "http://localhost:5000/authorize"
+# redirect_uri = "http://localhost:5000/authorize"
 
 
 def login() -> Response:
@@ -64,6 +64,7 @@ def logout() -> str:
     if "access_token" in session:
         del session["access_token"]
     return "logged out"
+
 
 # @app.route("/authorize")
 def authorize() -> Response:
@@ -124,10 +125,13 @@ def expense_route():
         return repr(err)
     return f"success: {ex}"
 
+
 ## example with api_key!
 S = Splitwise(consumer_key, consumer_secret, api_key=api_key)
 
 earnest = S.getGroups()[1]  # 0 is non-group
+
+
 @app.route("/debts")
 def debts() -> str:
     debts = [
@@ -136,8 +140,9 @@ def debts() -> str:
     ]
     return "\n".join(f"<li>{line}</li>" for line in debts)
 
+
 user_ids = {member.first_name: member.id for member in earnest.getMembers()}
-#shares = dict(csv.reader(open("shares.csv")))
+# shares = dict(csv.reader(open("shares.csv")))
 
 shares = {
     "Sylvie": 23,
@@ -147,7 +152,24 @@ shares = {
 real_shares = {**shares, "Leigh": 17}
 
 
-def mkexpense(cost=10, desc="Testing", group_id=earnest.id, shares=shares):
+def expense(
+    cost: float,
+    date: string = "now",
+    description: str = "",
+    category_id: int = food_category_id
+    split_with: list[str] = people_eating_food_in_may,
+    shares: dict[str, int] = may_shares,
+) -> None:
+    iso_date = maya.when(date).iso8601()
+    effective_shares = {
+        name: share for name, share in shares.items() if name in split_with
+    }
+    return mkexpense(cost, desc, iso_date, shares=may_shares)
+
+
+def mkexpense(
+    cost=10, desc="Testing", date="", shares=shares, group_id=earnest.id
+):
     expense = Expense()
     expense.setCost(cost)
     expense.setDescription(desc)
