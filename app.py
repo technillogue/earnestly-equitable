@@ -151,13 +151,15 @@ shares = {
 }  # this is with stef at 3120 effective income
 real_shares = {**shares, "Leigh": 17}
 
+food_category_id = 25
+may_shares = shares
 
 def expense(
     cost: float,
-    date: string = "now",
+    date: str = "now",
     description: str = "",
-    category_id: int = food_category_id
-    split_with: list[str] = people_eating_food_in_may,
+    category_id: int = food_category_id,
+    split_with: list[str] = list(shares.keys()),
     shares: dict[str, int] = may_shares,
 ) -> None:
     iso_date = maya.when(date).iso8601()
