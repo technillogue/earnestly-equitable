@@ -5,3 +5,6 @@
 	path = splitwise
 	url = git@github.com:technillogue/splitwise.git
 	branch = master
+[submodule "_splitwise"]
+	path = _splitwise
+	url = git@github.com:technillogue/splitwise.git

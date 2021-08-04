@@ -1,3 +1,4 @@
+import os
 import json
 import csv
 import sys
@@ -18,9 +19,9 @@ from flask import (
 from werkzeug.wrappers import Response
 
 # import splitwise # namespace import i think?
-import splitwise
-from splitwise import Splitwise
-from splitwise.expense import Expense, ExpenseUser
+import _splitwise
+from _splitwise import Splitwise
+from _splitwise.expense import Expense, ExpenseUser
 
 secrets = json.load(open("secrets.json"))
 consumer_key = secrets["consumer_key"]
@@ -43,7 +44,7 @@ def index() -> str:
     return render_template_string("\n".join([header, *links]))
 
 
-#redirect_uri = "http://localhost:5000/authorize"
+# redirect_uri = "http://localhost:5000/authorize"
 
 
 def login() -> Response:
@@ -58,10 +59,11 @@ def login() -> Response:
 
 
 def logout() -> Response:
-    if "oauth_session" in state:
-        del session["oauth_state"]
-    if "access_token" in state:
+    if "oauth_session" in session:
+        del session["oauth_session"]
+    if "access_token" in session:
         del session["access_token"]
+    return "should have logged out"
 
 
 # @app.route("/authorize")
@@ -123,10 +125,13 @@ def expense_route():
         return repr(err)
     return f"success: {ex}"
 
+
 ## example with api_key!
 S = Splitwise(consumer_key, consumer_secret, api_key=api_key)
 
 earnest = S.getGroups()[1]  # 0 is non-group
+
+
 @app.route("/debts")
 def debts() -> str:
     debts = [
@@ -135,8 +140,12 @@ def debts() -> str:
     ]
     return "\n".join(f"<li>{line}</li>" for line in debts)
 
+@app.route("/slack")
+def handle_inbound_slack() -> str:
+    return "ok"
+
 user_ids = {member.first_name: member.id for member in earnest.getMembers()}
-#shares = dict(csv.reader(open("shares.csv")))
+# shares = dict(csv.reader(open("shares.csv")))
 
 shares = {
     "Sylvie": 23,
@@ -146,7 +155,7 @@ shares = {
 real_shares = {**shares, "Leigh": 17}
 
 
-def mkexpense(cost=10, desc="Testing", group_id=earnest.id, shares=shares):
+def mkexpense(cost:int=10, desc: str="Testing", group_id:int=earnest.id, shares:dict[str, int]=shares):
     expense = Expense()
     expense.setCost(cost)
     expense.setDescription(desc)
@@ -201,4 +210,7 @@ if __name__ == "__main__":
     elif "--mkexpense" in sys.argv:
         mkexpense()
     else:
-        app.run(debug=True, int(os.environ.get("PORT", 8080)))
+        app.run(
+            port=int(os.environ.get("PORT", 8080)),
+            debug=True,
+        )
